@@ -142,10 +142,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="glad.c" />
+    <ClCompile Include="Layer.cpp" />
+    <ClCompile Include="Life.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragmentShader.glsl" />
+    <None Include="lifeFragment.glsl" />
+    <None Include="lifeVertex.glsl" />
     <None Include="particleFragmentShader.glsl" />
     <None Include="particleVertexShader.glsl" />
     <None Include="vertexShader.glsl" />
@@ -154,6 +158,8 @@
     <Image Include="cursor.png" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Layer.h" />
+    <ClInclude Include="Life.h" />
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
