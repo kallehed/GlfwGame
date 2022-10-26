@@ -206,6 +206,8 @@ public:
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+
+        glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_FALSE);
         //glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE);
         //glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         //glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
@@ -266,6 +268,8 @@ public:
         glDepthFunc(GL_LEQUAL);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glfwSetWindowOpacity(m_window, 1.0f);
 
         glfwSetErrorCallback(&Layer::error_callback);
         glfwSetFramebufferSizeCallback(m_window, &Layer::framebuffer_size_callback);
