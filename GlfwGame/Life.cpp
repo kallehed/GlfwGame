@@ -56,7 +56,14 @@ void Life::logic(Layer& layer)
         m_position.second -= 0.05f;
     }
 
-    m_zoom += layer.mouse_scroll().second / 10.f;
+    {
+        float scroll = layer.mouse_scroll().second;
+        std::pair<float, float> mouse_pos = layer.mouse_pos_N();
+        if (scroll != 0.f) {
+            m_zoom += scroll / 10.f;
+        }
+    }
+    
 
     if (layer.key_state(GLFW_KEY_P).just_pressed) {
         m_paused = !m_paused;
@@ -101,8 +108,8 @@ void Life::draw(Layer& layer)
 
 void Life::randomize()
 {
-    for (int i = 0; i < m_SIZE; ++i) {
-        for (int j = 0; j < m_SIZE; ++j) {
+    for (int i = 1; i < m_SIZE - 1; ++i) {
+        for (int j = 1; j < m_SIZE - 1; ++j) {
             m_matrix[i][j] = ((rand() % 2) == 0);
         }
     }
@@ -116,25 +123,16 @@ void Life::next_generation()
             matrix_copy[i][j] = m_matrix[i][j];
         }
     }
-    // apply algorithm
-    for (int i = 0; i < m_SIZE; ++i) {
-        for (int j = 0; j < m_SIZE; ++j) {
-            int neighbors = 0;
-            for (int n_i = i - 1; n_i <= i + 1; ++n_i) {
-                for (int n_j = j - 1; n_j <= j + 1; ++n_j) {
-                    if (n_i >= 0 && n_i < m_SIZE && n_j >= 0 && n_j < m_SIZE) {
-                        if (n_i != i || n_j != j) {
-                            neighbors += (int)matrix_copy[n_i][n_j];
-                        }
-                    }
-                }
-            }
-            if (matrix_copy[i][j]) { // if alive, alive if 2 or 3 neighbors
-                m_matrix[i][j] = (2 <= neighbors && neighbors <= 3);
-            }
-            else { // if dead, alive if 3 neighbors
-                m_matrix[i][j] = (neighbors == 3);
-            }
+    // apply algorithm on all EXCEPT BORDERS
+    for (int i = 1; i < m_SIZE - 1; ++i) {
+        for (int j = 1; j < m_SIZE - 1; ++j) {
+            auto& m = matrix_copy; // shorthand
+            int neighbors = m[i-1][j-1]+ m[i-1][j] + m[i-1][j+1] +
+                            m[i][j-1]        +       m[i][j+1] +
+                            m[i+1][j-1] + m[i+1][j] + m[i+1][j+1];
+            
+            // if alive, alive if 2 or 3 neighbors, if dead, alive if 3 neighbors
+            m_matrix[i][j] = matrix_copy[i][j] ? (2 <= neighbors && neighbors <= 3) : (neighbors == 3);
         }
     }
 }

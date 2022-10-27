@@ -213,13 +213,14 @@ void Layer::end_of_loop()
         double time_passed = glfwGetTime() - m_start_time;
         double sleep_time = (m_MIN_SEC_PER_FRAME - time_passed) / 2.0; // ?????? divide by 2, framerate otherwise halved?
 
-        std::this_thread::sleep_for(std::chrono::duration<double>(sleep_time));
+        //std::this_thread::sleep_for(std::chrono::duration<double>(sleep_time));
 
         int live_framerate = int(1.0 / (glfwGetTime() - m_start_time)); // frames per second (should be 60)
         glfwSetWindowTitle(m_window, std::to_string(live_framerate).c_str());
     }
 
     // errors
+#ifdef _DEBUG
     {
         GLenum err;
         while ((err = glGetError()) != GL_NO_ERROR)
@@ -227,6 +228,7 @@ void Layer::end_of_loop()
             std::cout << "ERROR: " << err << '\n';
         }
     }
+#endif
 
     // input
     {
@@ -283,7 +285,7 @@ void Layer::error_callback(int code, const char* description)
 }
 void Layer::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    std::cout << "framebuffer changed: " << width << " " << height << "\n";
+    //std::cout << "framebuffer changed: " << width << " " << height << "\n";
     glViewport(0, 0, width, height);
 }
 void Layer::cursor_position_callback(GLFWwindow* window, double xpos, double ypos) // gets in SCREEN COORDINATES
@@ -297,14 +299,14 @@ void Layer::cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 // window size in SCREEN COORDINATES
 void Layer::window_size_callback(GLFWwindow* window, int width, int height)
 {
-    std::cout << "window size changed: " << width << " " << height << "\n";
+    //std::cout << "window size changed: " << width << " " << height << "\n";
     Layer* layer = (Layer*)glfwGetWindowUserPointer(window);
     layer->m_window_size = { width, height };
 }
 void Layer::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) // action can only be PRESS or RELEASE
 {
     Layer* layer = (Layer*)glfwGetWindowUserPointer(window);
-    std::cout << "mouse btn: " << button << '\n';
+    //std::cout << "mouse btn: " << button << '\n';
     if (action == GLFW_PRESS) {
         layer->m_mouse_buttons_pressed[button] = true;
         layer->m_mouse_buttons_just_pressed[button] = true;
@@ -316,7 +318,7 @@ void Layer::mouse_button_callback(GLFWwindow* window, int button, int action, in
 void Layer::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     Layer* layer = (Layer*)glfwGetWindowUserPointer(window);
-    std::cout << "SCROLL: " << xoffset << " y: " << yoffset << '\n';
+    //std::cout << "SCROLL: " << xoffset << " y: " << yoffset << '\n';
     layer->m_scroll = { (float)xoffset, (float)yoffset };
 }
 void Layer::reset_keys() {
