@@ -91,17 +91,25 @@ void Life::draw(Layer& layer)
         glBindVertexArray(m_VAO);
 
         const float scale = m_zoom / m_matrix.size();
+        glUniform1f(m_u_scale, m_zoom / m_matrix.size());
+        
+        const float p_inc = m_zoom / m_matrix.size();
 
+        float y_pos = m_position.second;
         for (int i = 0; i < m_matrix.size(); ++i) {
+            float x_pos = m_position.first;
             for (int j = 0; j < m_matrix.size(); ++j) {
                 bool alive = m_matrix[i][j];
 
                 glUniform1f(m_u_color, (float)alive);
-                glUniform2f(m_u_position, m_zoom * (float)j / (float)m_matrix[0].size() + m_position.first, m_zoom * (float)i / (float)m_matrix.size() + m_position.second);
-                glUniform1f(m_u_scale, m_zoom / m_matrix.size());
+                glUniform2f(m_u_position, x_pos, y_pos);
+                
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+                x_pos += p_inc;
             }
+            y_pos += p_inc;
+            
         }
     }
 }
