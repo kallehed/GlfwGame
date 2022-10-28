@@ -34,9 +34,19 @@ Life::Life() {
 
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
+        
+        // data for colors 
 
+        glGenBuffers(1, &m_colors_VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, m_colors_VBO);
+        std::array<float, m_TOTAL_CELLS> colors = {0.0f};
+        
+        glBufferData(GL_ARRAY_BUFFER, sizeof(colors), (float*)&colors, GL_DYNAMIC_DRAW); // lesson: GPU seems to handle any amount of data
+
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+        glVertexAttribDivisor(1, 1);
     }
-    m_u_color = glGetUniformLocation(m_program, "u_color");
     m_u_offset = glGetUniformLocation(m_program, "u_offset");
     m_u_quad_length = glGetUniformLocation(m_program, "u_quad_length");
 }
@@ -67,8 +77,11 @@ void Life::logic(Layer& layer)
     if (layer.key_state(GLFW_KEY_P).just_pressed) {
         m_paused = !m_paused;
     }
-    if (layer.key_state(GLFW_KEY_R).just_pressed) {
+    if (layer.key_state(GLFW_KEY_R).pressed) {
         randomize();
+    }
+    if (layer.key_state(GLFW_KEY_T).just_pressed) {
+        reset_to_0();
     }
 
     // more LIFEY logic
@@ -89,24 +102,25 @@ void Life::draw(Layer& layer)
         glUseProgram(m_program);
         glBindVertexArray(m_VAO);
 
-        const float scale = m_zoom / m_matrix.size();
+        const float scale = m_zoom / m_SIZE;
 
-        float u_colors[m_SIZE][m_SIZE];
+        float colors[m_SIZE][m_SIZE];
         
-        const float p_inc = m_zoom / m_matrix.size();
+        const float p_inc = m_zoom / m_SIZE;
         glUniform1f(m_u_quad_length, p_inc);
         glUniform2f(m_u_offset, m_position.first, m_position.second);
 
-        for (int i = 0; i < m_matrix.size(); ++i) {
-            for (int j = 0; j < m_matrix.size(); ++j) {
-                bool alive = m_matrix[i][j];
-                u_colors[i][j] = (float)alive;
-                
-                //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        for (int i = 0; i < m_SIZE; ++i) {
+            for (int j = 0; j < m_SIZE; ++j) {
+                bool alive = m_buffers[m_buf_nr][i * m_SIZE + j];
+                colors[i][j] = (float)alive;
             }
         }
 
-        glUniform1fv(m_u_color, m_TOTAL_CELLS, (float*)u_colors);
+        glBindBuffer(GL_ARRAY_BUFFER, m_colors_VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(colors), (float*)colors);
+
+        //glUniform1fv(m_u_color, m_TOTAL_CELLS, (float*)u_colors);
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, m_TOTAL_CELLS);
     }
 }
@@ -115,29 +129,37 @@ void Life::randomize()
 {
     for (int i = 1; i < m_SIZE - 1; ++i) {
         for (int j = 1; j < m_SIZE - 1; ++j) {
-            m_matrix[i][j] = ((rand() % 2) == 0);
+            m_buffers[m_buf_nr][i * m_SIZE + j] = ((rand() % 2) == 0);
         }
     }
 }
 
-void Life::next_generation()
+void Life::reset_to_0()
 {
-    std::array<std::array<bool, m_SIZE>, m_SIZE> matrix_copy;
-    for (int i = 0; i < m_SIZE; ++i) {
-        for (int j = 0; j < m_SIZE; ++j) {
-            matrix_copy[i][j] = m_matrix[i][j];
+    for (int i = 1; i < m_SIZE - 1; ++i) {
+        for (int j = 1; j < m_SIZE - 1; ++j) {
+            m_buffers[m_buf_nr][i * m_SIZE + j] = false;
         }
     }
+}
+
+void Life::next_generation() // set (1 - m_buf_nr) to new buffer, then copy 
+{
+    const int old_buf = m_buf_nr;
+    m_buf_nr = 1 - old_buf;
+    const int new_buf = m_buf_nr;
+
     // apply algorithm on all EXCEPT BORDERS
     for (int i = 1; i < m_SIZE - 1; ++i) {
         for (int j = 1; j < m_SIZE - 1; ++j) {
-            auto& m = matrix_copy; // shorthand
-            int neighbors = m[i-1][j-1]+ m[i-1][j] + m[i-1][j+1] +
-                            m[i][j-1]        +       m[i][j+1] +
-                            m[i+1][j-1] + m[i+1][j] + m[i+1][j+1];
+            auto& m = m_buffers[old_buf]; // shorthand
+            const int p_up = (i - 1) * m_SIZE + j, p_mid = (i) * m_SIZE + j, p_down = (i + 1) * m_SIZE + j;
+            int neighbors = m[p_up - 1]   + m[p_up]   + m[p_up + 1] +
+                            m[p_mid - 1]  +             m[p_mid + 1] +
+                            m[p_down - 1] + m[p_down] + m[p_down + 1];
             
             // if alive, alive if 2 or 3 neighbors, if dead, alive if 3 neighbors
-            m_matrix[i][j] = matrix_copy[i][j] ? (2 <= neighbors && neighbors <= 3) : (neighbors == 3);
+            m_buffers[new_buf][p_mid] = m[p_mid] ? (2 <= neighbors && neighbors <= 3) : (neighbors == 3);
         }
     }
 }
