@@ -213,7 +213,7 @@ void Layer::end_of_loop()
         double time_passed = glfwGetTime() - m_start_time;
         double sleep_time = (m_MIN_SEC_PER_FRAME - time_passed) / 2.0; // ?????? divide by 2, framerate otherwise halved?
 
-        //std::this_thread::sleep_for(std::chrono::duration<double>(sleep_time));
+        std::this_thread::sleep_for(std::chrono::duration<double>(sleep_time));
 
         int live_framerate = int(1.0 / (glfwGetTime() - m_start_time)); // frames per second (should be 60)
         glfwSetWindowTitle(m_window, std::to_string(live_framerate).c_str());

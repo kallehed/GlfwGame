@@ -155,11 +155,10 @@ int main()
                     offsets[i][0] = -8.f + i * 0.5 + rand()%10;
                     offsets[i][1] = i * 0.5 - 8.f;
                 }
-
+                
                 glBindBuffer(GL_ARRAY_BUFFER, VBO_partic_instance);
                 glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(offsets), (float*)offsets);
             }
-
             glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 10, 32);
             
             // Triangle at mouse

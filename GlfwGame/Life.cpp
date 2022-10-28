@@ -37,8 +37,8 @@ Life::Life() {
 
     }
     m_u_color = glGetUniformLocation(m_program, "u_color");
-    m_u_position = glGetUniformLocation(m_program, "u_position");
-    m_u_scale = glGetUniformLocation(m_program, "u_scale");
+    m_u_offset = glGetUniformLocation(m_program, "u_offset");
+    m_u_quad_length = glGetUniformLocation(m_program, "u_quad_length");
 }
 
 void Life::logic(Layer& layer)
@@ -64,7 +64,6 @@ void Life::logic(Layer& layer)
         }
     }
     
-
     if (layer.key_state(GLFW_KEY_P).just_pressed) {
         m_paused = !m_paused;
     }
@@ -91,26 +90,24 @@ void Life::draw(Layer& layer)
         glBindVertexArray(m_VAO);
 
         const float scale = m_zoom / m_matrix.size();
-        glUniform1f(m_u_scale, m_zoom / m_matrix.size());
+
+        float u_colors[m_SIZE][m_SIZE];
         
         const float p_inc = m_zoom / m_matrix.size();
+        glUniform1f(m_u_quad_length, p_inc);
+        glUniform2f(m_u_offset, m_position.first, m_position.second);
 
-        float y_pos = m_position.second;
         for (int i = 0; i < m_matrix.size(); ++i) {
-            float x_pos = m_position.first;
             for (int j = 0; j < m_matrix.size(); ++j) {
                 bool alive = m_matrix[i][j];
-
-                glUniform1f(m_u_color, (float)alive);
-                glUniform2f(m_u_position, x_pos, y_pos);
+                u_colors[i][j] = (float)alive;
                 
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-                x_pos += p_inc;
+                //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
             }
-            y_pos += p_inc;
-            
         }
+
+        glUniform1fv(m_u_color, m_TOTAL_CELLS, (float*)u_colors);
+        glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, m_TOTAL_CELLS);
     }
 }
 
