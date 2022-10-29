@@ -56,7 +56,8 @@ Life::Life() {
 
 void Life::logic(Layer& layer)
 {
-    const float speed = 0.04f * (1.0f/m_zoom) * m_SIZE;
+    //const float speed = 0.04f * (1.0f/m_zoom) * m_SIZE;
+    const float speed = 0.04f;
     if (layer.key_state(GLFW_KEY_D).pressed) {
         m_position.first += speed;
     }
@@ -71,13 +72,13 @@ void Life::logic(Layer& layer)
     }
 
     // clicking -> turn on or off cells
-    if (layer.mouse_btn_state(GLFW_MOUSE_BUTTON_LEFT).pressed) {
-        
+    if (layer.mouse_btn_state(GLFW_MOUSE_BUTTON_LEFT).pressed)
+    {    
         auto pos = layer.mouse_pos_N();
-        int index = (pos.first + 1.0f) + (pos.second + 1.0f) * m_SIZE;
-        if (index >= 0 && index < m_TOTAL_CELLS) {
-            m_buffers[m_buf_nr] = true;
-        }
+        //int index = (((pos.first + 1.f) / 2.f) * m_SIZE)/m_zoom;
+        //if (index >= 0 && index < m_TOTAL_CELLS) {
+        //    m_buffers[m_buf_nr][index] = true;
+        //}
     }
 
     // scrolling
@@ -85,23 +86,31 @@ void Life::logic(Layer& layer)
         float scroll = layer.mouse_scroll().second;
         std::pair<float, float> mouse_pos = layer.mouse_pos_N();
         if (scroll != 0.f) {
-            m_zoom += (scroll / 10.f) * m_zoom;
+            float len_change = 1 +  scroll/10.f;
+
+            m_quad_length *= len_change;
+
+            float y_ac_pos = mouse_pos.second - m_position.second;
+            m_position.second -= (y_ac_pos * len_change) - y_ac_pos;
+
+            float x_ac_pos = mouse_pos.first - m_position.first;
+            m_position.first -= (x_ac_pos * len_change) - x_ac_pos;
         }
     }
     
-    if (layer.key_state(GLFW_KEY_P).just_pressed) {
+    if (layer.key_state(GLFW_KEY_SPACE).just_pressed) {
         m_paused = !m_paused;
     }
     if (layer.key_state(GLFW_KEY_R).pressed) {
         randomize();
     }
-    if (layer.key_state(GLFW_KEY_T).just_pressed) {
+    if (layer.key_state(GLFW_KEY_T).just_pressed) { // terminate
         reset_to_0();
     }
 
     // more LIFEY logic
     if (m_paused) {
-        if (layer.key_state(GLFW_KEY_SPACE).just_pressed) { // next generation
+        if (layer.key_state(GLFW_KEY_G).just_pressed) { // next (G)eneration
             next_generation();
         }
     }
@@ -117,7 +126,7 @@ void Life::draw(Layer& layer)
         glUseProgram(m_program);
         glBindVertexArray(m_VAO);
 
-        glUniform1f(m_u_quad_length, m_zoom / m_SIZE); // side length of quads
+        glUniform1f(m_u_quad_length, m_quad_length); // side length of quads
         glUniform2f(m_u_offset, m_position.first, m_position.second); // offset for all
 
         // black and white data
@@ -149,11 +158,7 @@ void Life::randomize()
 
 void Life::reset_to_0()
 {
-    for (int i = 1; i < m_SIZE - 1; ++i) {
-        for (int j = 1; j < m_SIZE - 1; ++j) {
-            m_buffers[m_buf_nr][i * m_SIZE + j] = false;
-        }
-    }
+    m_buffers[m_buf_nr] = { false };
 }
 
 void Life::next_generation() // set (1 - m_buf_nr) to new buffer, then copy 
