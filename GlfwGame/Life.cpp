@@ -47,8 +47,11 @@ Life::Life() {
         glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
         glVertexAttribDivisor(1, 1);
     }
+    
     m_u_offset = glGetUniformLocation(m_program, "u_offset");
     m_u_quad_length = glGetUniformLocation(m_program, "u_quad_length");
+    glUseProgram(m_program);
+    glUniform1i(glGetUniformLocation(m_program, "u_m_SIZE"), m_SIZE);
 }
 
 void Life::logic(Layer& layer)
@@ -67,6 +70,17 @@ void Life::logic(Layer& layer)
         m_position.second -= speed;
     }
 
+    // clicking -> turn on or off cells
+    if (layer.mouse_btn_state(GLFW_MOUSE_BUTTON_LEFT).pressed) {
+        
+        auto pos = layer.mouse_pos_N();
+        int index = (pos.first + 1.0f) + (pos.second + 1.0f) * m_SIZE;
+        if (index >= 0 && index < m_TOTAL_CELLS) {
+            m_buffers[m_buf_nr] = true;
+        }
+    }
+
+    // scrolling
     {
         float scroll = layer.mouse_scroll().second;
         std::pair<float, float> mouse_pos = layer.mouse_pos_N();
