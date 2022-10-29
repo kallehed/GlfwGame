@@ -53,24 +53,25 @@ Life::Life() {
 
 void Life::logic(Layer& layer)
 {
+    const float speed = 0.04f * (1.0f/m_zoom) * m_SIZE;
     if (layer.key_state(GLFW_KEY_D).pressed) {
-        m_position.first += 0.05f;
+        m_position.first += speed;
     }
     if (layer.key_state(GLFW_KEY_A).pressed) {
-        m_position.first -= 0.05f;
+        m_position.first -= speed;
     }
     if (layer.key_state(GLFW_KEY_W).pressed) {
-        m_position.second += 0.05f;
+        m_position.second += speed;
     }
     if (layer.key_state(GLFW_KEY_S).pressed) {
-        m_position.second -= 0.05f;
+        m_position.second -= speed;
     }
 
     {
         float scroll = layer.mouse_scroll().second;
         std::pair<float, float> mouse_pos = layer.mouse_pos_N();
         if (scroll != 0.f) {
-            m_zoom += scroll / 10.f;
+            m_zoom += (scroll / 10.f) * m_zoom;
         }
     }
     
@@ -102,25 +103,23 @@ void Life::draw(Layer& layer)
         glUseProgram(m_program);
         glBindVertexArray(m_VAO);
 
-        const float scale = m_zoom / m_SIZE;
+        glUniform1f(m_u_quad_length, m_zoom / m_SIZE); // side length of quads
+        glUniform2f(m_u_offset, m_position.first, m_position.second); // offset for all
 
-        float colors[m_SIZE][m_SIZE];
-        
-        const float p_inc = m_zoom / m_SIZE;
-        glUniform1f(m_u_quad_length, p_inc);
-        glUniform2f(m_u_offset, m_position.first, m_position.second);
+        // black and white data
+        {
+            float colors[m_SIZE][m_SIZE];
 
-        for (int i = 0; i < m_SIZE; ++i) {
-            for (int j = 0; j < m_SIZE; ++j) {
-                bool alive = m_buffers[m_buf_nr][i * m_SIZE + j];
-                colors[i][j] = (float)alive;
+            for (int i = 0; i < m_SIZE; ++i) {
+                for (int j = 0; j < m_SIZE; ++j) {
+                    colors[i][j] = (float)m_buffers[m_buf_nr][i * m_SIZE + j];
+                }
             }
+
+            glBindBuffer(GL_ARRAY_BUFFER, m_colors_VBO);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(colors), (float*)colors);
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, m_colors_VBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(colors), (float*)colors);
-
-        //glUniform1fv(m_u_color, m_TOTAL_CELLS, (float*)u_colors);
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, m_TOTAL_CELLS);
     }
 }

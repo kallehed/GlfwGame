@@ -25,7 +25,7 @@ private:
 	static constexpr int m_TOTAL_CELLS = m_SIZE * m_SIZE;
 	bool m_paused = true;
 	float m_zoom = 2.f; // how big things should be
-	std::pair<float, float> m_position = { -1.f, -1.f }; // offset viewing position, X AND Y
+	std::pair<float, float> m_position = { -m_SIZE/2.f, -m_SIZE/2.f }; // offset viewing position, X AND Y
 	std::array<std::bitset<m_TOTAL_CELLS>, 2> m_buffers;
 	int m_buf_nr = 0; // which buffer is currently active
 
