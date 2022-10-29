@@ -14,11 +14,12 @@ public:
 	void draw(Layer& layer);
 
 private:
+	int NC_to_buffer_index(float x, float y); // opengl normalized coords to index in m_buffers[m_buf_nr][HERE]
 	void randomize(); // set matrix to random bool values
 	void reset_to_0(); // set matrix to false for all values
 	void next_generation(); // transform 
 
-	static constexpr int m_SIZE = 2000; // how many cells in each direction
+	static constexpr int m_SIZE = 1000; // how many cells in each direction
 	static constexpr int m_TOTAL_CELLS = m_SIZE * m_SIZE;
 	bool m_paused = true;
 	float m_quad_length = 2.f/m_SIZE;

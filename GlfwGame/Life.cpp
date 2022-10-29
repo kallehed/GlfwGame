@@ -1,6 +1,8 @@
 #include "Life.h"
 #include "Layer.h"
 
+#include <iostream>
+
 Life::Life() {
     // random start seed
     randomize();
@@ -71,14 +73,24 @@ void Life::logic(Layer& layer)
         m_position.second -= speed;
     }
 
-    // clicking -> turn on or off cells
+    // left click -> turn on cell
     if (layer.mouse_btn_state(GLFW_MOUSE_BUTTON_LEFT).pressed)
     {    
-        auto pos = layer.mouse_pos_N();
-        //int index = (((pos.first + 1.f) / 2.f) * m_SIZE)/m_zoom;
-        //if (index >= 0 && index < m_TOTAL_CELLS) {
-        //    m_buffers[m_buf_nr][index] = true;
-        //}
+        auto mouse_pos = layer.mouse_pos_N();
+        int index = NC_to_buffer_index(mouse_pos.first, mouse_pos.second);
+
+        if (index >= 0 && index < m_TOTAL_CELLS) {
+            m_buffers[m_buf_nr][index] = true;
+        }
+    }
+    else if (layer.mouse_btn_state(GLFW_MOUSE_BUTTON_RIGHT).pressed) // right button -> kill cell
+    {
+        auto mouse_pos = layer.mouse_pos_N();
+        int index = NC_to_buffer_index(mouse_pos.first, mouse_pos.second);
+
+        if (index >= 0 && index < m_TOTAL_CELLS) {
+            m_buffers[m_buf_nr][index] = false;
+        }
     }
 
     // scrolling
@@ -90,11 +102,8 @@ void Life::logic(Layer& layer)
 
             m_quad_length *= len_change;
 
-            float y_ac_pos = mouse_pos.second - m_position.second;
-            m_position.second -= (y_ac_pos * len_change) - y_ac_pos;
-
-            float x_ac_pos = mouse_pos.first - m_position.first;
-            m_position.first -= (x_ac_pos * len_change) - x_ac_pos;
+            m_position.second += (mouse_pos.second - m_position.second) * (1 - len_change);
+            m_position.first += (mouse_pos.first - m_position.first) * (1 - len_change);
         }
     }
     
@@ -145,6 +154,20 @@ void Life::draw(Layer& layer)
 
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, m_TOTAL_CELLS);
     }
+}
+
+int Life::NC_to_buffer_index(float x, float y)
+{
+    // relative coords to LIFE square
+    float rel_x = x - m_position.first;
+    float rel_y = y - m_position.second;
+
+    // divide by length of square
+    float sq_length = m_quad_length * m_SIZE;
+    rel_x /= sq_length;
+    rel_y /= sq_length;
+
+    return int(rel_x * m_SIZE) + m_SIZE * int(rel_y * m_SIZE); // index
 }
 
 void Life::randomize()
