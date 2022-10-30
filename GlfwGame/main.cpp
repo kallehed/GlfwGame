@@ -8,6 +8,7 @@
 #include <thread>
 #include <array>
 
+#include "stb_image.h"
 
 int main()
 {
@@ -22,6 +23,7 @@ int main()
         // shaders / programs
     unsigned int shaderProgram = Layer::compile_shader_program("vertexShader.glsl", "fragmentShader.glsl", "First Shader");
     unsigned int particleProgram = Layer::compile_shader_program("particleVertexShader.glsl", "particleFragmentShader.glsl", "Particle Shader");
+    unsigned int imageProgram = Layer::compile_shader_program("imageVertex.glsl", "imageFragment.glsl", "Image Shader");
     
     // vertex array object
     // triangle drawing stuff
@@ -115,6 +117,67 @@ int main()
         glEnableVertexAttribArray(0);
     }
 
+    // image
+    unsigned int VAO_image, VBO_image, EBO_image, texture;
+    {
+        glGenVertexArrays(1, &VAO_image);
+        glGenBuffers(1, &VBO_image);
+        glGenBuffers(1, &EBO_image);
+        glGenBuffers(1, &VBO_image);
+
+        float vertices[] =
+        {
+            //x   y   tex x   y
+             0.0, 0.0,   0.0, 0.0, // bottom left
+             1.0, 0.0,   1.0, 0.0, // bottom right
+             1.0, 1.0,   1.0, 1.0, // top right
+             0.0, 1.0,   0.0, 1.0 // top left
+        };
+        unsigned int indices[] =
+        {
+            0, 1, 2, // first triangle
+            2, 3, 0// second triangle
+        };
+
+        glBindVertexArray(VAO_image);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO_image);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_image);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+        constexpr GLsizei stride = 4 * sizeof(float);
+
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(2 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        // texture
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // s = x
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // t = y    because: str = xyz
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // texture scaling
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        int width, height, nrChannels;
+        unsigned char* data = stbi_load("img.png", &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+        else
+        {
+            std::cout << "Failed to load texture" << std::endl;
+        }
+        stbi_image_free(data);
+    }
+
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     int time_uniform = glGetUniformLocation(shaderProgram, "time");
     int offset_uniform = glGetUniformLocation(shaderProgram, "offset");
@@ -170,6 +233,13 @@ int main()
             }
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 3);
+
+            // image / texture
+            glUseProgram(imageProgram);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glBindVertexArray(VAO_image);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
             life.draw(layer);
 

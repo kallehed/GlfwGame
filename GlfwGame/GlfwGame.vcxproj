@@ -150,6 +150,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fragmentShader.glsl" />
+    <None Include="imageFragment.glsl" />
+    <None Include="imageVertex.glsl" />
     <None Include="lifeFragment.glsl" />
     <None Include="lifeVertex.glsl" />
     <None Include="particleFragmentShader.glsl" />

@@ -45,6 +45,12 @@
     <None Include="lifeVertex.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="imageVertex.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="imageFragment.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="cursor.png">
