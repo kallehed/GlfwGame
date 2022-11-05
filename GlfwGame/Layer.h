@@ -88,8 +88,8 @@ private:
     GLFWcursor* m_cursor = NULL;
 
     // in SCREEN COORDINATES
-    std::pair<float, float> m_mouse_pos_SC = { 0.0, 0.0 };
-    std::pair<float, float> m_mouse_pos_N = { 0.0, 0.0 };
+    std::pair<float, float> m_mouse_pos_SC = { 0.0f, 0.0f };
+    std::pair<float, float> m_mouse_pos_N = { 0.0f, 0.0f };
 
     std::pair<float, float> m_scroll = { 0.0f, 0.0f }; // mouse scroll, x and y
 

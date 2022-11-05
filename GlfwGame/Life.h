@@ -19,7 +19,7 @@ private:
 	void reset_to_0(); // set matrix to false for all values
 	void next_generation(); // transform 
 
-	static constexpr int m_SIZE = 1000; // how many cells in each direction
+	static constexpr int m_SIZE = 200; // how many cells in each direction
 	static constexpr int m_TOTAL_CELLS = m_SIZE * m_SIZE;
 	bool m_paused = true;
 	float m_quad_length = 2.f/m_SIZE;

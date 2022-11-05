@@ -27,6 +27,9 @@
     <ClCompile Include="Life.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertexShader.glsl">
@@ -51,6 +54,12 @@
     <None Include="imageFragment.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="textFragment.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="textVertex.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="cursor.png">
@@ -65,6 +74,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Life.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

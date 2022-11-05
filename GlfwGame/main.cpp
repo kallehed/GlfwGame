@@ -1,5 +1,6 @@
 #include "Layer.h"
 #include "Life.h"
+#include "TextRenderer.h"
 
 #include <iostream>
 #include <fstream>
@@ -18,6 +19,10 @@ int main()
         if (result) return result;
     }
 
+    // fonts
+    
+    TextRenderer text_renderer;
+
     // for window
 
         // shaders / programs
@@ -25,6 +30,8 @@ int main()
     unsigned int particleProgram = Layer::compile_shader_program("particleVertexShader.glsl", "particleFragmentShader.glsl", "Particle Shader");
     unsigned int imageProgram = Layer::compile_shader_program("imageVertex.glsl", "imageFragment.glsl", "Image Shader");
     
+    TextRenderer textRenderer;
+
     // vertex array object
     // triangle drawing stuff
     unsigned int VAO, VBO;
@@ -74,8 +81,8 @@ int main()
         float offsets[32][2] = {{0.f, 0.f}};
 
         for (int i = 0; i < 32; ++i) {
-            offsets[i][0] = -8.f + i*0.5;
-            offsets[i][1] = i*0.5 - 8.f;
+            offsets[i][0] = -8.f + i*0.5f;
+            offsets[i][1] = i*0.5f - 8.f;
         }
 
         glGenBuffers(1, &VBO_partic_instance);
@@ -201,7 +208,7 @@ int main()
 
             glUseProgram(shaderProgram); // uniforms
             glUniform1f(time_uniform, (float)glfwGetTime());
-            glUniform2f(offset_uniform, x, 0.4 * sin(1.5 * glfwGetTime()));
+            glUniform2f(offset_uniform, x, 0.4f * sin(1.5f * (float)glfwGetTime()));
 
             // EBO rectangle
             glUseProgram(shaderProgram);
@@ -215,8 +222,8 @@ int main()
                 float offsets[32][2] = { {0.f, 0.f} };
 
                 for (int i = 0; i < 32; ++i) {
-                    offsets[i][0] = -8.f + i * 0.5 + rand()%10;
-                    offsets[i][1] = i * 0.5 - 8.f;
+                    offsets[i][0] = -8.f + i * 0.5f + rand()%10;
+                    offsets[i][1] = i * 0.5f - 8.f;
                 }
                 
                 glBindBuffer(GL_ARRAY_BUFFER, VBO_partic_instance);
@@ -229,7 +236,7 @@ int main()
             {
                 auto mouse_pos = layer.mouse_pos_N();
                 glUniform2f(offset_uniform, mouse_pos.first, mouse_pos.second);
-                glUniform1f(time_uniform, glfwGetTime() * 1.5);
+                glUniform1f(time_uniform, (float)glfwGetTime() * 1.5f);
             }
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -243,6 +250,8 @@ int main()
 
             life.draw(layer);
 
+            text_renderer.render_text("Move with A and D, zoom with mouse", -0.8f, 0.75f, 0.001f, { 0.2f, 0.4f, 0.f });
+            
         }
         // code
         layer.end_of_loop();
