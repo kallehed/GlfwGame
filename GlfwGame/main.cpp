@@ -250,7 +250,8 @@ int main()
 
             life.draw(layer);
 
-            text_renderer.render_text("Move with A and D, zoom with mouse", -0.8f, 0.75f, 0.001f, { 0.2f, 0.4f, 0.f });
+            text_renderer.render_text("Move with A and D, zoom with mouse.", -0.8f, 0.75f, 0.001f, { 0.2f, 0.4f, 0.f });
+            text_renderer.render_text("Esc for fullscreen", -0.8f + 0.2*cos(glfwGetTime()*1.2f), 0.35f + 0.1 * sin(glfwGetTime()), 0.001f, {0.06f, 0.6f, 0.95f});
             
         }
         // code
